@@ -1,0 +1,270 @@
+﻿<Window x:Class="StudyMess_Client.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:StudyMess_Client.Converters"
+        Title="StudyMess"
+        Height="600"
+        Width="900"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+        <conv:BoolToBackgroundConverter x:Key="BoolToBackgroundConverter"/>
+        <conv:BoolToTextAlignmentConverter x:Key="BoolToTextAlignmentConverter"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <conv:BoolToStatusBrushConverter x:Key="BoolToStatusBrushConverter"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <conv:TextAndIsMineToVisibilityConverter x:Key="TextAndIsMineToVisibilityConverter"/>
+        <conv:UriOrNullConverter x:Key="UriOrNullConverter"/>
+        <conv:NullToDefaultAvatarConverter x:Key="NullToDefaultAvatarConverter"/>
+
+        <DataTemplate x:Key="MessageTemplate">
+            <Border Background="{Binding IsMine, Converter={StaticResource BoolToBackgroundConverter}}"
+                    CornerRadius="12"
+                    Padding="10"
+                    Margin="16,4"
+                    MaxWidth="420">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Редактировать" Click="EditMessage_Click">
+                            <MenuItem.Visibility>
+                                <MultiBinding Converter="{StaticResource TextAndIsMineToVisibilityConverter}">
+                                    <Binding Path="Text"/>
+                                    <Binding Path="IsMine"/>
+                                </MultiBinding>
+                            </MenuItem.Visibility>
+                        </MenuItem>
+                        <MenuItem Header="Удалить"
+                                  Click="DeleteMessage_Click"
+                                  Visibility="{Binding IsMine, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <StackPanel>
+                    <TextBlock Text="{Binding SenderUsername}"
+                               FontWeight="Bold"
+                               Foreground="#2D72D9"
+                               FontSize="13"
+                               Margin="0,0,0,2"
+                               IsHitTestVisible="False"/>
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}">
+                        <TextBlock Text="{Binding Text}"
+                                   Foreground="Black"
+                                   FontSize="15"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,2"
+                                   TextAlignment="{Binding IsMine, Converter={StaticResource BoolToTextAlignmentConverter}}"/>
+
+                        <TextBlock Text=" (изменено)"
+                                   Foreground="Gray"
+                                   FontStyle="Italic"
+                                   FontSize="15"
+                                   Margin="4,0,0,2"
+                                   VerticalAlignment="Bottom"
+                                   Visibility="{Binding IsEdited, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </StackPanel>
+                    <TextBlock TextWrapping="Wrap"
+                               Visibility="{Binding AttachmentFileUrl, Converter={StaticResource NullToVisibilityConverter}}">
+                        <Hyperlink NavigateUri="{Binding AttachmentFileUrl, Converter={StaticResource UriOrNullConverter}}"
+                                   RequestNavigate="Hyperlink_RequestNavigate">
+                            <Run Text="{Binding AttachmentFileName}" />
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock Text="{Binding SentAt, StringFormat='{}{0:HH:mm}'}"
+                               FontSize="11"
+                               Foreground="Gray"
+                               HorizontalAlignment="Right"
+                               IsHitTestVisible="False"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ChatListItemTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <Image Width="36" Height="36" Margin="0,0,8,0"
+                       Source="{Binding AvatarUrl, Converter={StaticResource NullToDefaultAvatarConverter}}"
+                       VerticalAlignment="Center"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="10" Height="10" Margin="0,0,5,0"
+                                 Fill="{Binding IsOnline, Converter={StaticResource BoolToStatusBrushConverter}}"
+                                 Visibility="{Binding IsGroupChat, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}"/>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="В сети"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsGroupChat}" Value="True">
+                                            <Setter Property="Text" Value="Групповой чат"/>
+                                        </DataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsGroupChat}" Value="False"/>
+                                                <Condition Binding="{Binding IsOnline}" Value="False"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Text"
+                                                    Value="{Binding LastOnline, StringFormat='Был(а) в {0:HH:mm dd.MM}'}"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Border Background="{DynamicResource MaterialDesignCardBackground}"
+                CornerRadius="18"
+                Margin="16"
+                Padding="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Background="{DynamicResource MaterialDesignPaper}" Height="48" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                    <TextBlock Text="StudyMess"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource MaterialDesignBody}"
+                               VerticalAlignment="Center"
+                               Margin="24,0,0,0"/>
+                    <Button Width="32" Height="32"
+            Margin="788,11,48,5"
+            Style="{StaticResource MaterialDesignToolButton}"
+            ToolTip="Свернуть"
+            Click="Minimize_Click">
+                        <TextBlock Text="—" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Left" FontWeight="Bold"/>
+                    </Button>
+                    <Button Width="32" Height="32"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,16,0"
+                            Style="{StaticResource MaterialDesignToolButton}"
+                            ToolTip="Закрыть"
+                            Click="Close_Click">
+                        <TextBlock Text="✕" Foreground="Red" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    </Button>
+                </Grid>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Background="#E9E9E9" VerticalAlignment="Stretch">
+                        <StackPanel Margin="10,10,10,0">
+                            <Image x:Name="ProfileAvatar" Width="48" Height="48" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="ProfileName" FontWeight="Bold"/>
+                            <TextBlock x:Name="ProfileEmail" FontSize="12" Foreground="Gray"/>
+                        </StackPanel>
+                        <Button Content="Выйти"
+                                Click="Logout_Click"
+                                Margin="10,8,10,0"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                FontWeight="Bold"/>
+                        <Button Content="Создать чат"
+                                Click="CreateChat_Click"
+                                Margin="10,8,10,0"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Background="{DynamicResource MaterialDesignAccent}"
+                                Foreground="Black"
+                                FontWeight="Bold"/>
+                        <Button x:Name="AdminPanelButton"
+                                Content="Админ-панель"
+                                Click="AdminPanelButton_Click"
+                                Margin="10,8,10,0"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                FontWeight="Bold"
+                                Visibility="Collapsed"/>
+                        <TextBlock Text="Чаты" FontWeight="Bold" FontSize="18" Margin="10,16,10,0"/>
+                        <ListBox x:Name="ChatsListBox"
+                                 SelectionChanged="ChatsListBox_SelectionChanged"
+                                 ItemTemplate="{StaticResource ChatListItemTemplate}"
+                                 Margin="10,4,10,10"
+                                 Style="{StaticResource MaterialDesignListBox}"
+                                 VerticalAlignment="Top"
+                                 MaxHeight="250"/>
+                    </StackPanel>
+
+                    <Grid Grid.Column="1" Background="White">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ListBox x:Name="MessagesListBox"
+                                 ItemTemplate="{StaticResource MessageTemplate}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Margin="10"
+                                 HorizontalContentAlignment="Stretch"
+                                 SelectionMode="Single"
+                                 Focusable="True"/>
+
+                        <Grid Grid.Row="1" Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="MessageTextBox"
+                                     VerticalAlignment="Center"
+                                     MinHeight="48"
+                                     Margin="0,0,73,0"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                     FontSize="16"
+                                     Padding="8,10"
+                                     Grid.Column="0"/>
+
+                            <Button Content="📎"
+                                    Width="60"
+                                    Height="48"
+                                    HorizontalAlignment="Left"
+                                    Margin="415,2,0,2"
+                                    Style="{StaticResource MaterialDesignRaisedButton}"
+                                    Background="{DynamicResource MaterialDesignAccent}"
+                                    Foreground="Black"
+                                    FontSize="16"
+                                    Click="AttachFile_Click"
+                                    Cursor="Hand"/>
+
+                            <Button Content="Отправить"
+                                    Click="SendMessage_Click"
+                                    Height="48"
+                                    MinWidth="100"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource MaterialDesignRaisedButton}"
+                                    Background="{DynamicResource MaterialDesignAccent}"
+                                    Foreground="Black"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    Grid.Column="1"
+                                    IsDefault="True"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
