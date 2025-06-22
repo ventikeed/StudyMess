@@ -67,13 +67,21 @@ namespace StudyMess_Client.Views
 
         private async void CreateButton_Click(object sender, RoutedEventArgs e)
         {
-            var chatName = ChatNameTextBox.Text.Trim();
+            string chatName;
+            if (IsGroupChatCheckBox.IsChecked == false)
+            {
+                Random r = new Random();
+                chatName = r.Next(1,10000000).ToString();
+            }
+            else
+            {
+                chatName = GroupComboBox.Text.Trim();
+            }
             if (string.IsNullOrWhiteSpace(chatName))
             {
                 MessageBox.Show("Введите название чата.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             var selectedUsers = UsersListBox.SelectedItems.Cast<User>().ToList();
             if (selectedUsers.Count == 0)
             {

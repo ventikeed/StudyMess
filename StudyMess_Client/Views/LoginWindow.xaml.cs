@@ -18,9 +18,13 @@ namespace StudyMess_Client.Views
 
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(LoginTextBox.Text) || string.IsNullOrWhiteSpace(PasswordBox.Password))
+            {
+                MessageBox.Show("Введите логин и пароль.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             string login = LoginTextBox.Text;
             string password = PasswordBox.Password;
-
             var loginModel = new LoginModel
             {
                 Login = login,

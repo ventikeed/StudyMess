@@ -177,7 +177,7 @@
                                          VerticalAlignment="Center"
                                          VerticalContentAlignment="Center"
                                          Padding="8,0,8,0"
-                                         materialDesign:HintAssist.Hint="Название группы"/>
+                                         materialDesign:HintAssist.Hint="Название группы" TextChanged="NewGroupNameTextBox_TextChanged"/>
                                 <Button Content="Добавить"
                                         Margin="5"
                                         Height="36"

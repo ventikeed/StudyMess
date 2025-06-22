@@ -213,5 +213,10 @@ namespace StudyMess_Client.Views
         {
             this.WindowState = WindowState.Minimized;
         }
+
+        private void NewGroupNameTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
+        }
     }
 }

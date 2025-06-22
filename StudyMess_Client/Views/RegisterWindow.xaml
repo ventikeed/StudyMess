@@ -50,7 +50,7 @@
                     materialDesign:HintAssist.Hint="Email"
                     Margin="0,0,0,10"
                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                    FontSize="15"/>
+                    FontSize="15" TextChanged="EmailTextBox_TextChanged"/>
 
                 <TextBlock Text="Выберите группу:"
                            FontWeight="Bold"

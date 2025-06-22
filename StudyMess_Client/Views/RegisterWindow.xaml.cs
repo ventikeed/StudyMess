@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -66,7 +67,37 @@ namespace StudyMess_Client.Views
         {
             var selectedGroup = GroupListBox.SelectedItem as Group;
             string[] fullName = FullNameTextBox.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
+            if (fullName.Length > 2 || fullName.Length < 2)
+            {
+                MessageBox.Show("Введите имя и фамилию.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (UsernameTextBox.Text.Length < 3 || UsernameTextBox.Text.Length > 20)
+            {
+                MessageBox.Show("Длина логина должна быть от 3 до 20 символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (PasswordBox.Password.Length < 6 || PasswordBox.Password.Length > 20)
+            {
+                MessageBox.Show("Длина пароля должна быть от 6 до 20 символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            Regex regex = new Regex(@"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
+            if (!regex.IsMatch(EmailTextBox.Text))
+            {
+                MessageBox.Show("Введите корректную почту.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }    
+            if (EmailTextBox.Text.Length < 5 || EmailTextBox.Text.Length > 50)
+            {
+                MessageBox.Show("Длина email должна быть от 5 до 50 символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (selectedGroup == null)
+            {
+                MessageBox.Show("Выберите группу.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             var registerModel = new RegisterModel
             {
                 Username = UsernameTextBox.Text,
@@ -105,5 +136,9 @@ namespace StudyMess_Client.Views
             this.WindowState = WindowState.Minimized;
         }
 
+        private void EmailTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
+        }
     }
 }
