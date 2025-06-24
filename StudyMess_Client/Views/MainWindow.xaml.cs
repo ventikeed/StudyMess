@@ -505,5 +505,14 @@ namespace StudyMess_Client.Views
             var adminWindow = new AdminWindow();
             adminWindow.ShowDialog();
         }
+
+        private void UpdateChats_Click(object sender, RoutedEventArgs e)
+        {
+            LoadChat();
+        }
+        private void AddMembers_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
