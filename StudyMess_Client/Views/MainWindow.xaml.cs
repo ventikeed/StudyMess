@@ -510,9 +510,28 @@ namespace StudyMess_Client.Views
         {
             LoadChat();
         }
-        private void AddMembers_Click(object sender, RoutedEventArgs e)
+        private async void AddMembers_Click(object sender, RoutedEventArgs e)
         {
+            if (_selectedChat == null || !_selectedChat.IsGroupChat)
+            {
+                MessageBox.Show("Выберите групповой чат.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
+            var selectionWindow = new UserAddWindow(_selectedChat.Id) { Owner = this };
+            if (selectionWindow.ShowDialog() == true)
+            {
+                var usersToAdd = selectionWindow.SelectedUsers;
+                if (usersToAdd.Count > 0)
+                {
+                    var result = await _chatService.AddUsersToChatAsync(_selectedChat.Id, usersToAdd.Select(u => u.Id).ToList(), this);
+                    if (result)
+                    {
+                        MessageBox.Show("Пользователи успешно добавлены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await LoadMessagesAsync(_selectedChat.Id);
+                    }
+                }
+            }
         }
     }
 }

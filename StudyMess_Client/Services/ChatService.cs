@@ -273,5 +273,31 @@ namespace StudyMess_Client.Services
                 return null;
             }
         }
+        public async Task<bool> AddUsersToChatAsync(int chatId, List<int> userIds, Window? ownerWindow = null)
+        {
+            try
+            {
+                _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TokenStorage.Token);
+                var response = await _client.PostAsJsonAsync($"{_url}chat/{chatId}/add-users", userIds);
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    Utils.UnauthorizedHandler.HandleUnauthorized(ownerWindow);
+                    return false;
+                }
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show($"Ошибка при добавлении пользователей: {response.StatusCode}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при добавлении пользователей: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            return false;
+        }
     }
 }

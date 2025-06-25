@@ -334,5 +334,38 @@ namespace StudyMess_Server.Controllers
                 return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
+
+        [HttpPost("{chatId}/add-users")]
+        public async Task<IActionResult> AddUsersToChat(int chatId, [FromBody] List<int> userIds)
+        {
+            if (userIds == null || userIds.Count == 0)
+                return BadRequest("Список пользователей пуст.");
+
+            var chat = await _context.Chats.FindAsync(chatId);
+            if (chat == null)
+                return NotFound("Чат не найден.");
+
+            var existingUserIds = await _context.ChatMembers
+                .Where(cm => cm.ChatId == chatId)
+                .Select(cm => cm.UserId)
+                .ToListAsync();
+
+            var newUserIds = userIds.Except(existingUserIds).ToList();
+            if (newUserIds.Count == 0)
+                return BadRequest("Нет новых пользователей для добавления.");
+
+            var newMembers = newUserIds.Select(userId => new ChatMember
+            {
+                ChatId = chatId,
+                UserId = userId,
+                Role = "Member",
+                JoinedAt = DateTime.Now
+            }).ToList();
+
+            _context.ChatMembers.AddRange(newMembers);
+            await _context.SaveChangesAsync();
+
+            return Ok(newMembers.Count);
+        }
     }
 }
